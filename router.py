@@ -2,6 +2,11 @@ import os
 import requests
 from fastapi import HTTPException, File, UploadFile, HTTPException
 from fastapi import APIRouter
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 
 router = APIRouter(
@@ -13,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ca_path = os.path.join(BASE_DIR, "keys/_.ofd.uz.pem")
 ofd_client_cert = None
-OFD_URL = "https://test.ofd.uz/emp/v3/receipt"
+OFD_URL = os.environ.get("OFD_URL","")
 
 @router.post("/v2/ofd/punch")
 async def punch_receipt_proxy(file: UploadFile = File(...)):
