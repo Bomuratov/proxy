@@ -38,12 +38,13 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
             headers=headers,
             verify=ca_path,
             cert=ofd_client_cert,
-            timeout=30,
+            timeout=10,
         )
         resp.raise_for_status()
         return {"success": True, "ofd_response": resp.json()}
 
     except requests.RequestException as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"OFD request failed: {str(e)}")
 
 
