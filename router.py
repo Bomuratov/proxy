@@ -3,6 +3,7 @@ import requests
 from fastapi import HTTPException, File, UploadFile, HTTPException
 from fastapi import APIRouter
 from dotenv import load_dotenv
+import certifi
 
 load_dotenv()
 
@@ -33,7 +34,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
             OFD_URL,
             data=p7b_bytes,
             headers=headers,
-            verify=ca_path,
+            verify=certifi.where(),
             timeout=10,
         )
         resp.raise_for_status()
