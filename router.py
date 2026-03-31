@@ -14,7 +14,8 @@ router = APIRouter(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-ca_path = os.path.join(BASE_DIR, "keys/_.ofd.uz.pem")
+# ca_path = os.path.join(BASE_DIR, "keys/_.ofd.uz.pem")
+ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
 
