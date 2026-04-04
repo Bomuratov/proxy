@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
-
+NOTIFY_URL = "https://notify.aurora-api.uz/fastapi/reject/ofd"
 
 @router.post("/v2/ofd/punch")
 async def punch_receipt_proxy(file: UploadFile = File(...)):
@@ -42,7 +42,28 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
 
     except requests.RequestException as e:
         print(e)
-        raise HTTPException(status_code=500, detail=f"OFD request failed: {str(e)}")
+        # --- ДОБАВИЛИ: отправка в notify API ---
+        try:
+            requests.post(
+                NOTIFY_URL,
+                files={
+                    "file": (file.filename, p7b_bytes, "application/octet-stream")
+                },
+                data={
+                    "error": str(e),
+                    "chat_id": -5157406566,
+                },
+                timeout=5,
+            )
+        except Exception as notify_err:
+            print("Notify error:", notify_err)
+
+        # --- оставляем твою логику ---
+        raise HTTPException(
+            status_code=500,
+            detail=f"OFD request failed: {str(e)}"
+        )
+
 
 
 # import os
