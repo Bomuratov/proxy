@@ -41,6 +41,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
         return {"success": True, "ofd_response": resp.json()}
 
     except requests.RequestException as e:
+        print(e)
         # --- ДОБАВИЛИ: отправка в notify API ---
         try:
             requests.post(
