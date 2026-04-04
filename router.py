@@ -51,7 +51,6 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
                 },
                 data={
                     "error": str(e),
-                    "chat_id": -5157406566,
                 },
                 timeout=5,
             )
