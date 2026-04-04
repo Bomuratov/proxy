@@ -35,7 +35,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
             data=p7b_bytes,
             headers=headers,
             verify=certifi.where(),
-            timeout=(5, 20),
+            timeout=(5, 10),
         )
         resp.raise_for_status()
         return {"success": True, "ofd_response": resp.json()}
