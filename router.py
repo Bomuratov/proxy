@@ -19,6 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
+PROD_OFD_URL = os.environ.get("PROD_OFD_URL", "")
 NOTIFY_URL = "https://notify.aurora-api.uz/fastapi/reject/ofd"
 
 @router.post("/v2/ofd/punch")
@@ -31,7 +32,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
         headers = {"Content-Type": "application/octet-stream"}
 
         resp = requests.post(
-            OFD_URL,
+            PROD_OFD_URL,
             data=p7b_bytes,
             headers=headers,
             verify=certifi.where(),
@@ -62,6 +63,9 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
             status_code=500,
             detail=f"OFD request failed: {str(e)}"
         )
+
+
+
 
 
 
