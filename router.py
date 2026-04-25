@@ -4,6 +4,11 @@ from fastapi import HTTPException, File, UploadFile, HTTPException
 from fastapi import APIRouter
 from dotenv import load_dotenv
 import certifi
+from starlette import status
+
+from schemas import VerifyCode
+from sms_service import EskizSMS
+from telegram_service import TelegramService
 
 load_dotenv()
 
@@ -19,8 +24,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
-PROD_OFD_URL = os.environ.get("PROD_OFD_URL", "")
+PROD_OFD_URL = "https://ofd.uz/emp/v3/receipt"
 NOTIFY_URL = "https://notify.aurora-api.uz/fastapi/reject/ofd"
+
 
 @router.post("/v2/ofd/punch")
 async def punch_receipt_proxy(file: UploadFile = File(...)):
@@ -32,7 +38,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
         headers = {"Content-Type": "application/octet-stream"}
 
         resp = requests.post(
-            PROD_OFD_URL,
+            url="https://ofd.uz/emp/v3/receipt",
             data=p7b_bytes,
             headers=headers,
             verify=certifi.where(),
@@ -47,9 +53,7 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
         try:
             requests.post(
                 NOTIFY_URL,
-                files={
-                    "file": (file.filename, p7b_bytes, "application/octet-stream")
-                },
+                files={"file": (file.filename, p7b_bytes, "application/octet-stream")},
                 data={
                     "error": str(e),
                 },
@@ -59,14 +63,37 @@ async def punch_receipt_proxy(file: UploadFile = File(...)):
             print("Notify error:", notify_err)
 
         # --- оставляем твою логику ---
-        raise HTTPException(
-            status_code=500,
-            detail=f"OFD request failed: {str(e)}"
+        raise HTTPException(status_code=500, detail=f"OFD request failed: {str(e)}")
+
+
+@router.post("/send-verify-code")
+def send_verification(payload: VerifyCode):
+    eskiz = EskizSMS()
+    bot = TelegramService()
+    response = None
+
+    try:
+        response = eskiz.send_sms(phone=str(payload.phone), otp=str(payload.otp))
+
+        data = response.json()
+        text = f"OTP успешно отправлен на номер +{payload.phone},\nOTP код: {payload.otp}\nОтвет от ESKIZ:\n<pre language='json'>{data}</pre>"
+
+        bot.send_message(
+            text=text,
         )
 
+        return data
 
+    except requests.RequestException as e:
+        error_text = f"Ошибка при отправке OTP на номер +{payload.phone}\nOTP: {payload.otp}\nОшибка: {str(e)}"
+        bot.send_message(
+            text=error_text,
+        )
 
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при отправке SMS",
+        )
 
 
 # import os
