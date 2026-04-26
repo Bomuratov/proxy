@@ -76,19 +76,19 @@ def send_verification(payload: VerifyCode):
         response = eskiz.send_sms(phone=str(payload.phone), otp=str(payload.otp))
 
         data = response.json()
-        text = f"OTP успешно отправлен на номер +{payload.phone},\nOTP код: {payload.otp}\nОтвет от ESKIZ:\n<pre language='json'>{data}</pre>"
+        # text = f"OTP успешно отправлен на номер +{payload.phone},\nOTP код: {payload.otp}\nОтвет от ESKIZ:\n<pre language='json'>{data}</pre>"
 
-        bot.send_message(
-            text=text,
-        )
+        # bot.send_message(
+        #     text=text,
+        # )
 
         return data
 
     except requests.RequestException as e:
         error_text = f"Ошибка при отправке OTP на номер +{payload.phone}\nOTP: {payload.otp}\nОшибка: {str(e)}"
-        bot.send_message(
-            text=error_text,
-        )
+        # bot.send_message(
+        #     text=error_text,
+        # )
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
