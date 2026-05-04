@@ -9,6 +9,7 @@ from starlette import status
 from schemas import VerifyCode
 from sms_service import EskizSMS
 from telegram_service import TelegramService
+from fastapi import Header
 
 load_dotenv()
 
@@ -25,20 +26,27 @@ ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
 PROD_OFD_URL = "https://ofd.uz/emp/v3/receipt"
+TEST_OFD_URL = "https://test.ofd.uz/emp/v3/receipt"
 NOTIFY_URL = "https://notify.aurora-api.uz/fastapi/reject/ofd"
 
 
 @router.post("/v2/ofd/punch")
-async def punch_receipt_proxy(file: UploadFile = File(...)):
+async def punch_receipt_proxy(file: UploadFile = File(...), x_source: str | None = Header(default=None),):
     """
     Получает p7b файл от Django и отправляет на OFD
     """
+    if x_source == "django-stage":
+        ofd_url = TEST_OFD_URL
+    else:
+        ofd_url = PROD_OFD_URL
     try:
         p7b_bytes = await file.read()
         headers = {"Content-Type": "application/octet-stream"}
 
+        print("OFD URL:", ofd_url)
+        print("X-SOURCE:", x_source)
         resp = requests.post(
-            url="https://ofd.uz/emp/v3/receipt",
+            url=ofd_url,
             data=p7b_bytes,
             headers=headers,
             verify=certifi.where(),
