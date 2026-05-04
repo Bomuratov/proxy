@@ -33,3 +33,8 @@ class PayloadModel(BaseModel):
     for_wife: int
     auto_credit: int
     credit: int
+
+
+class VerifyCode(BaseModel):
+    otp: str
+    phone: str
