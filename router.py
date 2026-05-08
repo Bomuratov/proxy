@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ca_path = os.path.join(BASE_DIR, "keys/test_ofd.pem")
 ofd_client_cert = None
 OFD_URL = os.environ.get("OFD_URL", "")
-PROD_OFD_URL = "https://ofd.uz/emp/v3/receipt"
+PROD_OFD_URL = "https://emp.soliq.uz/emp/v3/receipt"
 TEST_OFD_URL = "https://test.ofd.uz/emp/v3/receipt"
 NOTIFY_URL = "https://notify.aurora-api.uz/fastapi/reject/ofd"
 
@@ -51,7 +51,12 @@ async def punch_receipt_proxy(file: UploadFile = File(...), x_source: str | None
             headers=headers,
             verify=certifi.where(),
             timeout=(5, 10),
+            allow_redirects=False,
         )
+        print("REQUEST URL:", resp.request.url)
+        print(resp.status_code)
+        print(resp.headers)
+        print(resp.text)
         resp.raise_for_status()
         return {"success": True, "ofd_response": resp.json()}
 
